@@ -1,4 +1,5 @@
 use image::{DynamicImage, GenericImageView, Pixel};
+use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::collections::HashSet;
 use std::fs::{File, OpenOptions};
@@ -7,36 +8,39 @@ use std::io::{self, BufRead, BufReader, BufWriter, Write};
 pub struct GeographicBitmapAnalysis {
     image: DynamicImage,
     dimensions: (u32, u32),
+    rng: ThreadRng,
 }
 
 impl GeographicBitmapAnalysis {
     pub fn new(path: &str) -> Result<Self, image::ImageError> {
         let image = image::open(path)?;
         let dimensions = (image.width(), image.height());
-        Ok(Self { image, dimensions })
+        let rng = rand::thread_rng();
+        Ok(Self { image, dimensions, rng })
     }
 
-    pub fn get_random_coordinate_on_land(&mut self, coordinates_record: &str) -> io::Result<()> {
-        let saaved_coordinates = Self::load_coordinates_record(coordinates_record)?;
+    pub fn get_random_coordinate_on_land(
+        &mut self,
+        coordinates_record: &str,
+    ) -> Result<(f64, f64), io::Error> {
+        let saved_coordinates = Self::load_coordinates_record(coordinates_record)?;
         let mut new_coordinates = HashSet::new();
         // generate random x and y position in bitmap (pixels)
-        let mut rng = rand::thread_rng();
-        let pixel_x = rng.gen_range(0..=self.dimensions.0);
-        let pixel_y = rng.gen_range(0..=self.dimensions.1);
+        let pixel_x = self.rng.gen_range(0..=self.dimensions.0);
+        let pixel_y = self.rng.gen_range(0..=self.dimensions.1);
         let mut latitude: f64 = 0.0;
         let mut longitude: f64 = 0.0;
         let coordinate = format!("{},{}", latitude, longitude);
         // evaluate if position is on land
-        if self.is_pixel_black(pixel_x, pixel_y) && !saaved_coordinates.contains(&coordinate) {
+        if self.is_pixel_black(pixel_x, pixel_y) && !saved_coordinates.contains(&coordinate) {
             new_coordinates.insert(coordinate.clone());
             Self::append_unique_coordinates(coordinates_record, &new_coordinates)?;
             latitude = ((pixel_y as f64 / (self.dimensions.1 as f64 / 180.0)) - 90.0) / -1.0;
             longitude = (pixel_x as f64 / (self.dimensions.0 as f64 / 360.0)) - 180.0;
-            return (longitude, latitude);
+            return Ok((longitude, latitude));
         } else {
-            self.get_random_coordinate_on_land();
+            return self.get_random_coordinate_on_land(coordinates_record);
         }
-        Ok(())
     }
 
     fn load_coordinates_record(filename: &str) -> io::Result<HashSet<String>> {
