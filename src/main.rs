@@ -10,7 +10,28 @@ use std::io::{self, stdout, BufRead, BufReader, BufWriter, Write};
 fn main() -> io::Result<()> {
     // let mut curl = Easy::new();
     let coordinates_path = "resources/coordinates.txt";
+    let existing_coordinates = load_coordinates(coordinates_path)?;
+    let mut new_coordinates = HashSet::new();
     let n: i32 = request_input(&String::from("Enter number of times to scrape: "));
+    let mut rng = rand::thread_rng();
+    loop {
+        let latitude = rng.gen_range(-90.0..=90.0);
+        let longitude = rng.gen_range(-180.0..=180.0);
+        let coordinate = format!("{},{}", latitude, longitude);
+        // Check if the generated coordinate is already present
+        if !existing_coordinates.contains(&coordinate) {
+            // If not, insert it to existing_coordinates set
+            new_coordinates.insert(coordinate.clone());
+        }
+        if new_coordinates.len() >= n as usize {
+            break;
+        }
+    }
+    // Append new unique coordinates to the file
+    append_unique_coordinates(coordinates_path, &new_coordinates)?;
+    // Print the generated coordinates
+    println!("Generated coordinates:");
+    println!("{:?}", new_coordinates);
 
     /* curl.url("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat=51.034&lon=11.836&browser=0&outputformat=json&optimalangles=1&startyear=2005&endyear=2005").unwrap();
     curl.write_function(|data| {

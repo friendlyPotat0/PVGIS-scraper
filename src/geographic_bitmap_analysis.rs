@@ -6,41 +6,40 @@ use std::io::{self, BufRead, BufReader, BufWriter, Write};
 
 pub struct GeographicBitmapAnalysis {
     image: DynamicImage,
+    dimensions: (u32, u32),
 }
 
 impl GeographicBitmapAnalysis {
     pub fn new(path: &str) -> Result<Self, image::ImageError> {
         let image = image::open(path)?;
-        Ok(Self { image })
+        let dimensions = (image.width(), image.height());
+        Ok(Self { image, dimensions })
     }
 
-    pub fn get_random_coordinate_on_land() -> io::Result<()> {
-        let coordinates_path = "resources/coordinates.txt";
-        let existing_coordinates = Self::load_coordinates(coordinates_path)?;
+    pub fn get_random_coordinate_on_land(&mut self, coordinates_record: &str) -> io::Result<()> {
+        let saaved_coordinates = Self::load_coordinates_record(coordinates_record)?;
         let mut new_coordinates = HashSet::new();
+        // generate random x and y position in bitmap (pixels)
         let mut rng = rand::thread_rng();
-        loop {
-            let latitude = rng.gen_range(-90.0..=90.0);
-            let longitude = rng.gen_range(-180.0..=180.0);
-            let coordinate = format!("{},{}", latitude, longitude);
-            // Check if the generated coordinate is already present
-            if !existing_coordinates.contains(&coordinate) {
-                // If not, insert it to existing_coordinates set
-                new_coordinates.insert(coordinate.clone());
-            }
-            if new_coordinates.len() >= n as usize {
-                break;
-            }
+        let pixel_x = rng.gen_range(0..=self.dimensions.0);
+        let pixel_y = rng.gen_range(0..=self.dimensions.1);
+        let mut latitude: f64 = 0.0;
+        let mut longitude: f64 = 0.0;
+        let coordinate = format!("{},{}", latitude, longitude);
+        // evaluate if position is on land
+        if self.is_pixel_black(pixel_x, pixel_y) && !saaved_coordinates.contains(&coordinate) {
+            new_coordinates.insert(coordinate.clone());
+            Self::append_unique_coordinates(coordinates_record, &new_coordinates)?;
+            latitude = ((pixel_y as f64 / (self.dimensions.1 as f64 / 180.0)) - 90.0) / -1.0;
+            longitude = (pixel_x as f64 / (self.dimensions.0 as f64 / 360.0)) - 180.0;
+            return (longitude, latitude);
+        } else {
+            self.get_random_coordinate_on_land();
         }
-        // Append new unique coordinates to the file
-        Self::append_unique_coordinates(coordinates_path, &new_coordinates)?;
-        // Print the generated coordinates
-        println!("Generated coordinates:");
-        println!("{:?}", new_coordinates);
         Ok(())
     }
 
-    fn load_coordinates(filename: &str) -> io::Result<HashSet<String>> {
+    fn load_coordinates_record(filename: &str) -> io::Result<HashSet<String>> {
         let mut coordinates_set = HashSet::new();
         if let Ok(file) = File::open(filename) {
             let reader = BufReader::new(file);
@@ -66,8 +65,7 @@ impl GeographicBitmapAnalysis {
         Ok(())
     }
 
-    // Check if a pixel at given coordinates is black
-    pub fn is_black_pixel(&self, x: u32, y: u32) -> bool {
+    fn is_pixel_black(&self, x: u32, y: u32) -> bool {
         let pixel_color = self.image.get_pixel(x, y);
         let channels = pixel_color.channels();
         let (r, g, b) = (channels[0], channels[1], channels[2]);
