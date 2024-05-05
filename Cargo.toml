@@ -1,0 +1,9 @@
+[package]
+name = "scraper"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+curl = "0.4.46"
+image = "0.25.1"
+rand = "0.8.5"
