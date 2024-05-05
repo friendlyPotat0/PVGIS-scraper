@@ -1,9 +1,6 @@
 use image::{DynamicImage, GenericImageView, Pixel};
 use rand::rngs::ThreadRng;
 use rand::Rng;
-use std::collections::HashSet;
-use std::fs::{File, OpenOptions};
-use std::io::{self, BufRead, BufReader, BufWriter, Write};
 
 pub struct GeographicBitmapAnalysis {
     image: DynamicImage,

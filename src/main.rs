@@ -6,12 +6,12 @@ use std::{env, io};
 
 // Print a web page onto stdout
 fn main() {
+    env::set_var("RUST_BACKTRACE", "1");
     // let mut curl = Easy::new();
     // let n: i32 = request_input(&String::from("Enter number of times to scrape: "));
     // !!
-    // env::set_var("RUST_BACKTRACE", "1");
     // Create an instance of GeographicBitmapAnalysis
-    let mut analysis = GeographicBitmapAnalysis::new("resources/map.bmp")
+    let mut analysis = GeographicBitmapAnalysis::new("resources/map (copy).png")
         .expect("Failed to create GeographicBitmapAnalysis");
 
     // Call the get_random_coordinate_on_land method
