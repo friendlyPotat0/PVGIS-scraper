@@ -11,7 +11,7 @@ fn main() {
     // let n: i32 = request_input(&String::from("Enter number of times to scrape: "));
     // !!
     // Create an instance of GeographicBitmapAnalysis
-    let mut analysis = GeographicBitmapAnalysis::new("resources/map (copy).png")
+    let mut analysis = GeographicBitmapAnalysis::new("resources/map.png")
         .expect("Failed to create GeographicBitmapAnalysis");
 
     // Call the get_random_coordinate_on_land method
