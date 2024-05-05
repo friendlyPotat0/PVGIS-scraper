@@ -16,28 +16,37 @@ impl GeographicBitmapAnalysis {
         let image = image::open(path)?;
         let dimensions = (image.width(), image.height());
         let rng = rand::thread_rng();
-        Ok(Self { image, dimensions, rng })
+        Ok(Self {
+            image,
+            dimensions,
+            rng,
+        })
     }
 
-    pub fn get_random_coordinate_on_land(
-        &mut self,
-        coordinates_record: &str,
-    ) -> Result<(f64, f64), io::Error> {
-        let saved_coordinates = Self::load_coordinates_record(coordinates_record)?;
+    pub fn get_random_coordinate_on_land(&mut self, coordinates_record: &str) -> (f64, f64) {
+        let saved_coordinates = Self::load_coordinates_record(coordinates_record)
+            .expect("Failed to load coordinates record");
         let mut new_coordinates = HashSet::new();
         // generate random x and y position in bitmap (pixels)
-        let pixel_x = self.rng.gen_range(0..=self.dimensions.0);
-        let pixel_y = self.rng.gen_range(0..=self.dimensions.1);
+        let pixel_x = self.rng.gen_range(0..self.dimensions.0);
+        let pixel_y = self.rng.gen_range(0..self.dimensions.1);
+        let pixel_x = 2006;
+        let pixel_y = 1079;
         let mut latitude: f64 = 0.0;
         let mut longitude: f64 = 0.0;
         let coordinate = format!("{},{}", latitude, longitude);
+        println!("x: {pixel_x}");
+        println!("y: {pixel_y}");
+        println!("lat: {}",((pixel_y as f64 / (self.dimensions.1 as f64 / 180.0)) - 90.0) / -1.0);
+        println!("lon: {}\n",(pixel_x as f64 / (self.dimensions.0 as f64 / 360.0)) - 180.0);
         // evaluate if position is on land
         if self.is_pixel_black(pixel_x, pixel_y) && !saved_coordinates.contains(&coordinate) {
             new_coordinates.insert(coordinate.clone());
-            Self::append_unique_coordinates(coordinates_record, &new_coordinates)?;
+            Self::append_unique_coordinates(coordinates_record, &new_coordinates)
+                .expect("Failed to append unique coordinates");
             latitude = ((pixel_y as f64 / (self.dimensions.1 as f64 / 180.0)) - 90.0) / -1.0;
             longitude = (pixel_x as f64 / (self.dimensions.0 as f64 / 360.0)) - 180.0;
-            return Ok((longitude, latitude));
+            return (longitude, latitude);
         } else {
             return self.get_random_coordinate_on_land(coordinates_record);
         }
@@ -69,7 +78,7 @@ impl GeographicBitmapAnalysis {
         Ok(())
     }
 
-    fn is_pixel_black(&self, x: u32, y: u32) -> bool {
+    pub fn is_pixel_black(&self, x: u32, y: u32) -> bool {
         let pixel_color = self.image.get_pixel(x, y);
         let channels = pixel_color.channels();
         let (r, g, b) = (channels[0], channels[1], channels[2]);
