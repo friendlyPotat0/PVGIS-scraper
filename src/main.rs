@@ -15,7 +15,7 @@ fn main() {
         .expect("Failed to create GeographicBitmapAnalysis");
 
     // Call the get_random_coordinate_on_land method
-    let (x, y) = analysis.get_random_coordinate_on_land("resources/coordinates_record.csv");
+    let (x, y) = analysis.get_random_coordinate_on_land();
 
     // Now you can use x and y as needed
     println!("X coordinate: {}", x);
