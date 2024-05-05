@@ -1,45 +1,22 @@
 mod geographic_bitmap_analysis;
+mod curl_module;
 
-// use curl::easy::Easy;
+use curl_module::CurlModule;
 use geographic_bitmap_analysis::GeographicBitmapAnalysis;
 use std::{env, io};
 
 // Print a web page onto stdout
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
-    // let mut curl = Easy::new();
-    // let n: i32 = request_input(&String::from("Enter number of times to scrape: "));
-    // !!
-    // Create an instance of GeographicBitmapAnalysis
-    let mut analysis = GeographicBitmapAnalysis::new("resources/map.png")
-        .expect("Failed to create GeographicBitmapAnalysis");
-
-    // Call the get_random_coordinate_on_land method
-    let (x, y) = analysis.get_random_coordinate_on_land();
-
-    // Now you can use x and y as needed
-    println!("X coordinate: {}", x);
-    println!("Y coordinate: {}", y);
-    /* if analysis.is_pixel_black(2006, 1079) {
-        println!("Black");
-    } else {
-        println!("White");
-    } */
-    // !!
-    // for _ in 0..n {
-    // let coordinates = gba?.get_random_coordinate_on_land("resources/coordinates_record.csv");
-    // println!("{}", )?;
-    // }
-
-    /* curl.url("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat=51.034&lon=11.836&browser=0&outputformat=json&optimalangles=1&startyear=2005&endyear=2005").unwrap();
-    curl.write_function(|data| {
-        stdout().write_all(data).unwrap();
-        Ok(data.len())
-    })
-    .unwrap();
-    curl.perform().unwrap(); */
-
-    // println!("{}", curl.response_code().unwrap());
+    let mut geographic_bitmap_analysis = GeographicBitmapAnalysis::new("resources/map.png").expect("Failed to create GeographicBitmapAnalysis");
+    let mut curl_module = CurlModule::new();
+    let n: i32 = request_input(&String::from("Enter number of times to scrape: "));
+    for _ in 0..n {
+        let (latitude, longitude) = geographic_bitmap_analysis.get_random_coordinate_on_land();
+        let url = format!("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat={:.3}&lon={:.3}&browser=0&outputformat=json&optimalangles=1", latitude, longitude);
+        let filename = format!("resources/solar-radiation-database/{:.3}_{:.3}.json", latitude, longitude);
+        curl_module.download(&url, &filename);
+    }
 }
 
 fn request_input(message: &String) -> i32 {
