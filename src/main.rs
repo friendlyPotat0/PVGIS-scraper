@@ -14,7 +14,7 @@ fn main() {
     for _ in 0..n {
         let (latitude, longitude) = geographic_bitmap_analysis.get_random_coordinate_on_land();
         let url = format!("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat={:.3}&lon={:.3}&browser=0&outputformat=json&optimalangles=1", latitude, longitude);
-        let filename = format!("resources/solar-radiation-database/{:.3}_{:.3}.json", latitude, longitude);
+        let filename = format!("resources/solar-radiation-database/timeseries_{:.3}_{:.3}.json", latitude, longitude);
         curl_module.download(&url, &filename);
     }
 }
