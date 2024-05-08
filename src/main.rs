@@ -17,7 +17,6 @@ fn main() {
         let (latitude, longitude) = geographic_bitmap_analysis.get_random_coordinate_on_land();
         let url = format!("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat={:.3}&lon={:.3}&browser=0&outputformat=json&optimalangles=1", latitude, longitude);
         let filename = format!("{}/timeseries_{:.3}_{:.3}.json", path, latitude, longitude);
-        println!("{filename}");
         curl_module.download(&url, &filename);
     }
 }

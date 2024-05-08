@@ -22,13 +22,14 @@ impl CurlModule {
             Ok(data.len())
         }).expect("Failed to set write function");
 
-        let filename = Path::new(filename).file_name().unwrap().to_str().unwrap().to_owned();
+        let filename = Path::new(filename).file_name().unwrap().to_string_lossy().into_owned();
         self.easy.progress(true).unwrap();
         self.easy.progress_function(move |_dltotal, dlnow, _ultotal, _ulnow| {
             print!("\r{}: {} received bytes ", filename, dlnow);
             std::io::stdout().flush().unwrap();
             true
         }).unwrap();
+        println!("");
 
         self.easy.perform().expect("Failed to perform download");
     }
