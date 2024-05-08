@@ -11,11 +11,11 @@ fn main() {
     let mut geographic_bitmap_analysis = GeographicBitmapAnalysis::new("resources/map.png").expect("Failed to create GeographicBitmapAnalysis");
     let mut curl_module = CurlModule::new();
     let n: i32 = request_num_input("Enter number of times to scrape: ");
+    let path = request_string_input("Enter path to store scraped files: ");
+    let path = path.strip_suffix('/').unwrap_or(&path);
     for _ in 0..n {
         let (latitude, longitude) = geographic_bitmap_analysis.get_random_coordinate_on_land();
         let url = format!("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat={:.3}&lon={:.3}&browser=0&outputformat=json&optimalangles=1", latitude, longitude);
-        let path = request_string_input("Enter path to store scraped files: ");
-        let path = path.strip_suffix('/').unwrap_or(&path);
         let filename = format!("{}/timeseries_{:.3}_{:.3}.json", path, latitude, longitude);
         println!("{filename}");
         curl_module.download(&url, &filename);
