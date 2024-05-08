@@ -29,7 +29,6 @@ impl CurlModule {
             std::io::stdout().flush().unwrap();
             true
         }).unwrap();
-        println!("");
 
         self.easy.perform().expect("Failed to perform download");
     }
