@@ -13,11 +13,11 @@ fn main() {
     let n: i32 = request_num_input("Enter number of times to scrape: ");
     let path = request_string_input("Enter path to store scraped files: ");
     let path = path.strip_suffix('/').unwrap_or(&path);
-    for _ in 0..n {
+    for i in 1..=n {
         let (latitude, longitude) = geographic_bitmap_analysis.get_random_coordinate_on_land();
         let url = format!("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat={:.3}&lon={:.3}&browser=0&outputformat=json&optimalangles=1", latitude, longitude);
         let filename = format!("{}/timeseries_{:.3}_{:.3}.json", path, latitude, longitude);
-        curl_module.download(&url, &filename);
+        curl_module.download(&url, &filename, i);
     }
 }
 

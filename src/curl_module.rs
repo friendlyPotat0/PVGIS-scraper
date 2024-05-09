@@ -12,7 +12,7 @@ impl CurlModule {
         Self { easy: Easy::new() }
     }
 
-    pub fn download(&mut self, url: &String, filename: &String) {
+    pub fn download(&mut self, url: &String, filename: &String, id: i32) {
         let mut file = File::create(filename).expect("Failed to create file");
 
         self.easy.url(url).expect("Failed to set URL");
@@ -25,7 +25,7 @@ impl CurlModule {
         let filename = Path::new(filename).file_name().unwrap().to_string_lossy().into_owned();
         self.easy.progress(true).unwrap();
         self.easy.progress_function(move |_dltotal, dlnow, _ultotal, _ulnow| {
-            print!("\r{}: {} received bytes ", filename, dlnow);
+            print!("\r{} [#{}]: {} received bytes ", filename, id, dlnow);
             std::io::stdout().flush().unwrap();
             true
         }).unwrap();
